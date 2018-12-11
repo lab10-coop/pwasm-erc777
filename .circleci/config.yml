@@ -1,0 +1,66 @@
+aliases:
+  - &update-npm
+    name: Update npm to the latest version
+    command: sudo npm install -g npm@latest
+
+  - &save-dependencies-cache
+    key: v1-dependency-cache-{{ checksum "package.json" }}
+    paths:
+      - ./node_modules
+
+  - &restore-dependencies-cache
+    keys:
+      - v1-dependency-cache-{{ checksum "package.json" }}
+      - v1-dependency-cache-
+
+  - &save-build-cache
+    key: v1-build-cache-{{ .BuildNum }}
+    paths:
+      - ./build
+
+  - &restore-build-cache
+    keys:
+      - v1-build-cache-{{ .BuildNum }}
+      - v1-build-cache-
+  - &filter-all-tags
+    tags:
+      only: /.*/
+
+defaults: &defaults
+  docker:
+    - image: circleci/node:10.6.0
+  working_directory: ~/erc777
+
+version: 2
+
+jobs:
+  install-dependencies:
+    <<: *defaults
+    steps:
+      - run: *update-npm
+      - checkout
+      - run:
+          name: Install npm dependencies with npm ci
+          command: npm ci
+      - save_cache: *save-dependencies-cache
+  test:
+    <<: *defaults
+    steps:
+      - run: *update-npm
+      - checkout
+      - restore_cache: *restore-dependencies-cache
+      - restore_cache: *restore-build-cache
+      - run:
+          name: Test
+          command: npm run test
+
+workflows:
+  version: 2
+  ci_cd:
+    jobs:
+      - install-dependencies:
+          filters: *filter-all-tags
+      - test:
+          requires:
+            - build
+          filters: *filter-all-tags
