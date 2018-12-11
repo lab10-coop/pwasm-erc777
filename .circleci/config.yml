@@ -51,4 +51,6 @@ workflows:
       - install-dependencies:
           filters: *filter-all-tags
       - test:
+          requires:
+            - install-dependencies
           filters: *filter-all-tags
