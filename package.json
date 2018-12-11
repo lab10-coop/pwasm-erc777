@@ -1,0 +1,30 @@
+{
+  "name": "pwasm-erc777-tests",
+  "version": "1.0.0",
+  "description": "web3 Unit Tests for pwasm ERC777 contract",
+  "main": "",
+  "scripts": {
+    "test": "./scripts/test.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:lab10-coop/pwasm-erc777.git"
+  },
+  "author": "David Forstenlechner <dfo@lab10.coop>",
+  "license": "MPL-2.0",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "mocha": "^5.2.0",
+    "web3": "^1.0.0-beta.36",
+    "eslint": "^5.10.0",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-formatter-pretty": "^2.0.0",
+    "eslint-formatter-stylish-verbose": "0.0.1",
+    "eslint-friendly-formatter": "^4.0.1",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-node": "^8.0.0",
+    "eslint-plugin-promise": "^4.0.1",
+    "eslint-plugin-standard": "^4.0.0"
+  }
+}

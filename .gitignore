@@ -59,3 +59,15 @@ typings/
 
 # next.js build output
 .next
+
+parity_data/**
+!parity_data/keys
+!parity_data/keys/DevelopmentChain
+parity_data/keys/DevelopmentChain/address_book.json
+!parity_data/keys/DevelopmentChain/test_key.json
+
+\.idea/
+target/
+
+\.DS_Store
+
