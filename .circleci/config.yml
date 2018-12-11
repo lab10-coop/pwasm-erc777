@@ -13,15 +13,6 @@ aliases:
       - v1-dependency-cache-{{ checksum "package.json" }}
       - v1-dependency-cache-
 
-  - &save-build-cache
-    key: v1-build-cache-{{ .BuildNum }}
-    paths:
-      - ./build
-
-  - &restore-build-cache
-    keys:
-      - v1-build-cache-{{ .BuildNum }}
-      - v1-build-cache-
   - &filter-all-tags
     tags:
       only: /.*/
@@ -49,7 +40,6 @@ jobs:
       - run: *update-npm
       - checkout
       - restore_cache: *restore-dependencies-cache
-      - restore_cache: *restore-build-cache
       - run:
           name: Test
           command: npm run test
@@ -61,6 +51,4 @@ workflows:
       - install-dependencies:
           filters: *filter-all-tags
       - test:
-          requires:
-            - build
           filters: *filter-all-tags
