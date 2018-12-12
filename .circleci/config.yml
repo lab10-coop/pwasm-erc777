@@ -39,6 +39,7 @@ jobs:
     steps:
       - run: *update-npm
       - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
+      - run: source ~/.profile
       - run: rustup install nightly-2018-11-15
       - run: rustup target add wasm32-unknown-unknown
       - checkout
