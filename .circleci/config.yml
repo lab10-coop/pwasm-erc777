@@ -40,8 +40,9 @@ jobs:
       - run: *update-npm
       - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
       - run: source ~/.profile && rustup install nightly-2018-11-15
-      - run: source ~/.profile && rustup default nightly
+      - run: source ~/.profile && rustup default nightly-2018-11-15
       - run: source ~/.profile && rustup target add wasm32-unknown-unknown
+      - run: source ~/.profile && cargo install pwasm-utils-cli --bin wasm-build
       - checkout
       - run: source ~/.profile && cd contracts/pwasm-erc777 && ./build.sh
       - run: source ~/.profile && cd contracts/pwasm-erc777 && ./test.sh
