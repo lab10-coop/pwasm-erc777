@@ -1,6 +1,18 @@
 // Contract doesn't use Rust's standard library
 #![no_std]
 
+pub mod token {
+    use pwasm_abi_derive::eth_abi;
+    use pwasm_std::String;
+
+    #[eth_abi(ERC777Endpoint, ERC777Client)]
+    pub trait ERC777Interface {
+
+        #[constant]
+        fn name(&mut self) -> String;
+    }
+}
+
 /// Will be described in the next step
 #[no_mangle]
 pub fn deploy() {
