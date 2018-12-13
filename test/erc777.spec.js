@@ -8,6 +8,7 @@ const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
 let token = {
   name: 'ReferenceToken',
   symbol: 'XRT',
+  granularity: '0.01',
 };
 
 describe('pwasm ERC777 contract', function() {
@@ -22,6 +23,7 @@ describe('pwasm ERC777 contract', function() {
         arguments: [
           token.name,
           token.symbol,
+          web3.utils.toWei(token.granularity),
         ],
       });
     const gas = await TokenDeployTransaction.estimateGas();
@@ -42,5 +44,15 @@ describe('pwasm ERC777 contract', function() {
       const totalSupply = await token.contract.methods.totalSupply().call();
       assert.equal(web3.utils.fromWei(totalSupply), 0);
     });
+    it(`should have a granularity of ${token.granularity}`,
+      async function() {
+        const granularity = (
+          await token.contract.methods.granularity().call()).toString();
+        assert.strictEqual(
+          web3.utils.fromWei(granularity),
+          token.granularity
+        );
+      }
+    );
   });
 });

@@ -14,3 +14,7 @@ pub fn symbol_key() -> H256 {
 pub fn total_supply_key() -> H256 {
     keccak(b"TOTAL_SUPPLY_KEY")
 }
+
+pub fn granularity_key() -> H256 {
+    keccak(b"GRANULARITY_KEY")
+}

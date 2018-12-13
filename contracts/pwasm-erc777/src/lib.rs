@@ -13,7 +13,7 @@ pub mod token {
 
     #[eth_abi(ERC777Endpoint, ERC777Client)]
     pub trait ERC777Interface {
-        fn constructor(&mut self, name: String, symbol: String);
+        fn constructor(&mut self, name: String, symbol: String, granularity: U256);
 
         #[constant]
         fn name(&mut self) -> String;
@@ -23,15 +23,19 @@ pub mod token {
 
         #[constant]
         fn totalSupply(&mut self) -> U256;
+
+        #[constant]
+        fn granularity(&mut self) -> U256;
     }
 
     pub struct ERC777Contract;
 
     impl ERC777Interface for ERC777Contract {
 
-        fn constructor(&mut self, name: String, symbol: String) {
+        fn constructor(&mut self, name: String, symbol: String, granularity: U256) {
             write_string(&name_key(), &name);
             write_string(&symbol_key(), &symbol);
+            pwasm_ethereum::write(&granularity_key(), &granularity.into());
         }
 
         fn name(&mut self) -> String {
@@ -44,6 +48,10 @@ pub mod token {
 
         fn totalSupply(&mut self) -> U256 {
             U256::from_big_endian(&pwasm_ethereum::read(&total_supply_key()))
+        }
+
+        fn granularity(&mut self) -> U256 {
+            U256::from_big_endian(&pwasm_ethereum::read(&granularity_key()))
         }
     }
 }
@@ -75,6 +83,7 @@ mod tests {
 
     static TEST_NAME: &'static str = "TestToken";
     static TEST_SYMBOL: &'static str = "TTK";
+    static TEST_GRANULARITY: u64 = 100000000000000;
 
     fn init_test_contract() -> token::ERC777Contract {
         let mut contract = token::ERC777Contract{};
@@ -84,7 +93,7 @@ mod tests {
 
         let name = String::from(TEST_NAME);
         let symbol = String::from(TEST_SYMBOL);
-        contract.constructor(name.clone(), symbol);
+        contract.constructor(name.clone(), symbol, U256::from(TEST_GRANULARITY));
         contract
     }
 
@@ -104,5 +113,11 @@ mod tests {
     fn initial_total_supply_should_be_zero() {
         let mut contract = init_test_contract();
         assert_eq!(contract.totalSupply(), U256::zero());
+    }
+
+    #[test]
+    fn should_set_and_retrieve_granularity() {
+        let mut contract = init_test_contract();
+        assert_eq!(contract.granularity(), U256::from(TEST_GRANULARITY));
     }
 }
