@@ -39,20 +39,20 @@ jobs:
     steps:
       - run: *update-npm
       - run:
-        name: Install rustup
-        command: curl https://sh.rustup.rs -sSf | sh -s -- -y
+          name: Install rustup
+          command: curl https://sh.rustup.rs -sSf | sh -s -- -y
       - run:
-        name: Install nightly Rust build required by pwasm
-        command: source ~/.profile && rustup install nightly-2018-11-15
+          name: Install nightly Rust build required by pwasm
+          command: source ~/.profile && rustup install nightly-2018-11-15
       - run:
-        name: Set nightly as default
-        command: source ~/.profile && rustup default nightly-2018-11-15
+          name: Set nightly as default
+          command: source ~/.profile && rustup default nightly-2018-11-15
       - run:
-        name: Install Rust target for WebAssembly
-        command: source ~/.profile && rustup target add wasm32-unknown-unknown
+          name: Install Rust target for WebAssembly
+          command: source ~/.profile && rustup target add wasm32-unknown-unknown
       - run: 
-        name: Install pwasm utilities
-        command: source ~/.profile && cargo install pwasm-utils-cli --bin wasm-build
+          name: Install pwasm utilities
+          command: source ~/.profile && cargo install pwasm-utils-cli --bin wasm-build
       - checkout
       - run: 
           name: Rust/WebAssembly Build
