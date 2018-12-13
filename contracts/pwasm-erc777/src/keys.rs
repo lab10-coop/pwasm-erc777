@@ -10,3 +10,7 @@ pub fn name_key() -> H256 {
 pub fn symbol_key() -> H256 {
     keccak(b"SYMBOL_KEY")
 }
+
+pub fn total_supply_key() -> H256 {
+    keccak(b"TOTAL_SUPPLY_KEY")
+}

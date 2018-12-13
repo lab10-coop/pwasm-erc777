@@ -5,8 +5,9 @@ mod keys;
 mod utils;
 
 pub mod token {
-    use pwasm_abi_derive::eth_abi;
     use pwasm_std::String;
+    use pwasm_abi::types::U256;
+    use pwasm_abi_derive::eth_abi;
     use crate::keys::*;
     use crate::utils::*;
 
@@ -14,13 +15,14 @@ pub mod token {
     pub trait ERC777Interface {
         fn constructor(&mut self, name: String, symbol: String);
 
-        /// The ERC777 Token name
         #[constant]
         fn name(&mut self) -> String;
 
-        /// The ERC777 Symbol
         #[constant]
         fn symbol(&mut self)-> String;
+
+        #[constant]
+        fn totalSupply(&mut self) -> U256;
     }
 
     pub struct ERC777Contract;
@@ -38,6 +40,10 @@ pub mod token {
 
         fn symbol(&mut self)-> String {
             read_string(&symbol_key())
+        }
+
+        fn totalSupply(&mut self) -> U256 {
+            U256::from_big_endian(&pwasm_ethereum::read(&total_supply_key()))
         }
     }
 }
@@ -92,5 +98,11 @@ mod tests {
     fn should_set_and_retrieve_the_correct_token_symbol() {
         let mut contract = init_test_contract();
         assert_eq!(contract.symbol(), TEST_SYMBOL);
+    }
+
+    #[test]
+    fn initial_total_supply_should_be_zero() {
+        let mut contract = init_test_contract();
+        assert_eq!(contract.totalSupply(), U256::zero());
     }
 }
