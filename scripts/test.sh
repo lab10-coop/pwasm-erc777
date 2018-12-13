@@ -39,7 +39,10 @@ else
 fi
 
 echo "Building pwasm ERC777 Contract..."
-# todo: Build pwasm ERC777 Contract here
+# todo: Automate building of all contracts in the "contracts" folder
+cd contracts/pwasm-erc777
+./build.sh
+cd ../..
 
 # Give parity some more time to start
 sleep 0.5

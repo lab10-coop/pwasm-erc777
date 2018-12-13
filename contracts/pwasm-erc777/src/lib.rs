@@ -33,16 +33,21 @@ pub mod token {
     }
 }
 
+// Declares the dispatch and dispatch_ctor methods
+use pwasm_abi::eth::EndpointInterface;
+
 /// Will be described in the next step
 #[no_mangle]
 pub fn deploy() {
+    let mut endpoint = token::ERC777Endpoint::new(token::ERC777Contract{});
+    endpoint.dispatch_ctor(&pwasm_ethereum::input());
 }
 
 /// The call function is the main function of the *deployed* contract
 #[no_mangle]
 pub fn call() {
-    // Send a result pointer to the runtime
-    pwasm_ethereum::ret(&b"result"[..]);
+    let mut endpoint = token::ERC777Endpoint::new(token::ERC777Contract{});
+    pwasm_ethereum::ret(&endpoint.dispatch(&pwasm_ethereum::input()));
 }
 
 #[cfg(test)]
