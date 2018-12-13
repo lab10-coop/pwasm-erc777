@@ -63,7 +63,7 @@ jobs:
       - restore_cache: *restore-dependencies-cache
       - run:
           name: Unit Tests for JavaScript/web3 compatibility
-          command: npm run test
+          command: source ~/.profile && npm run test
 
 workflows:
   version: 2
