@@ -12,23 +12,32 @@ pub mod token {
 
     #[eth_abi(ERC777Endpoint, ERC777Client)]
     pub trait ERC777Interface {
-        fn constructor(&mut self, name: String);
+        fn constructor(&mut self, name: String, symbol: String);
 
         /// The ERC777 Token name
         #[constant]
         fn name(&mut self) -> String;
+
+        /// The ERC777 Symbol
+        #[constant]
+        fn symbol(&mut self)-> String;
     }
 
     pub struct ERC777Contract;
 
     impl ERC777Interface for ERC777Contract {
 
-        fn constructor(&mut self, name: String) {
+        fn constructor(&mut self, name: String, symbol: String) {
             write_string(&name_key(), &name);
+            write_string(&symbol_key(), &symbol);
         }
 
         fn name(&mut self) -> String {
             read_string(&name_key())
+        }
+
+        fn symbol(&mut self)-> String {
+            read_string(&symbol_key())
         }
     }
 }
@@ -58,16 +67,30 @@ mod tests {
     use pwasm_abi::types::*;
     use pwasm_test::{ext_reset};
 
-    #[test]
-    fn should_set_and_retrieve_the_correct_token_name() {
+    static TEST_NAME: &'static str = "TestToken";
+    static TEST_SYMBOL: &'static str = "TTK";
+
+    fn init_test_contract() -> token::ERC777Contract {
         let mut contract = token::ERC777Contract{};
         let owner_address = Address::from([0xea, 0x67, 0x4f, 0xdd, 0xe7, 0x14, 0xfd, 0x97, 0x9d, 0xe3, 0xed, 0xf0, 0xf5, 0x6a, 0xa9, 0x71, 0x6b, 0x89, 0x8e, 0xc8]);
         // Here we're creating an External context using ExternalBuilder and set the `sender` to the `owner_address`
         ext_reset(|e| e.sender(owner_address.clone()));
 
-        let name = String::from("TestToken");
-        contract.constructor(name.clone());
+        let name = String::from(TEST_NAME);
+        let symbol = String::from(TEST_SYMBOL);
+        contract.constructor(name.clone(), symbol);
+        contract
+    }
 
-        assert_eq!(contract.name(), name);
+    #[test]
+    fn should_set_and_retrieve_the_correct_token_name() {
+        let mut contract = init_test_contract();
+        assert_eq!(contract.name(), TEST_NAME);
+    }
+
+    #[test]
+    fn should_set_and_retrieve_the_correct_token_symbol() {
+        let mut contract = init_test_contract();
+        assert_eq!(contract.symbol(), TEST_SYMBOL);
     }
 }

@@ -7,6 +7,7 @@ const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
 
 let token = {
   name: 'ReferenceToken',
+  symbol: 'XRT',  
 };
 
 describe('pwasm ERC777 contract', function() {
@@ -20,6 +21,7 @@ describe('pwasm ERC777 contract', function() {
       .deploy({ data: codeHex,
         arguments: [
           token.name,
+          token.symbol,
         ],
       });
     const gas = await TokenDeployTransaction.estimateGas();
@@ -31,6 +33,10 @@ describe('pwasm ERC777 contract', function() {
     it(`should have the name "${token.name}"`, async function() {
       const name = await token.contract.methods.name().call();
       assert.strictEqual(name, token.name);
+    });
+    it(`should have the symbol "${token.symbol}"`, async function() {
+      const symbol = await token.contract.methods.symbol().call();
+      assert.strictEqual(symbol, token.symbol);
     });
   });
 });
