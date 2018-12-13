@@ -38,17 +38,31 @@ jobs:
     <<: *defaults
     steps:
       - run: *update-npm
-      - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
-      - run: source ~/.profile && rustup install nightly-2018-11-15
-      - run: source ~/.profile && rustup default nightly-2018-11-15
-      - run: source ~/.profile && rustup target add wasm32-unknown-unknown
-      - run: source ~/.profile && cargo install pwasm-utils-cli --bin wasm-build
+      - run:
+        name: Install rustup
+        command: curl https://sh.rustup.rs -sSf | sh -s -- -y
+      - run:
+        name: Install nightly Rust build required by pwasm
+        command: source ~/.profile && rustup install nightly-2018-11-15
+      - run:
+        name: Set nightly as default
+        command: source ~/.profile && rustup default nightly-2018-11-15
+      - run:
+        name: Install Rust target for WebAssembly
+        command: source ~/.profile && rustup target add wasm32-unknown-unknown
+      - run: 
+        name: Install pwasm utilities
+        command: source ~/.profile && cargo install pwasm-utils-cli --bin wasm-build
       - checkout
-      - run: source ~/.profile && cd contracts/pwasm-erc777 && ./build.sh
-      - run: source ~/.profile && cd contracts/pwasm-erc777 && ./test.sh
+      - run: 
+          name: Rust/WebAssembly Build
+          command: source ~/.profile && cd contracts/pwasm-erc777 && ./build.sh
+      - run:
+          name: Rust Unit Tests
+          command: source ~/.profile && cd contracts/pwasm-erc777 && ./test.sh
       - restore_cache: *restore-dependencies-cache
       - run:
-          name: Test
+          name: Unit Tests for JavaScript/web3 compatibility
           command: npm run test
 
 workflows:
