@@ -6,7 +6,7 @@ mod utils;
 
 pub mod token {
     use pwasm_std::String;
-    use pwasm_abi::types::U256;
+    use pwasm_abi::types::*;
     use pwasm_abi_derive::eth_abi;
     use crate::keys::*;
     use crate::utils::*;
@@ -26,6 +26,13 @@ pub mod token {
 
         #[constant]
         fn granularity(&mut self) -> U256;
+
+        #[constant]
+        fn defaultOperators(&mut self) -> Vec<Address>;
+        fn authorizeOperator(&mut self, operator: Address);
+        fn revokeOperator(&mut self, operator: Address);
+        #[constant]
+        fn isOperatorFor(&mut self, operator: Address, token_holder: Address) -> bool;
     }
 
     pub struct ERC777Contract;
@@ -52,6 +59,20 @@ pub mod token {
 
         fn granularity(&mut self) -> U256 {
             U256::from_big_endian(&pwasm_ethereum::read(&granularity_key()))
+        }
+
+        fn defaultOperators(&mut self) -> Vec<Address> {
+            Vec::new()
+        }
+
+        fn authorizeOperator(&mut self, _operator: Address) {
+        }
+
+        fn revokeOperator(&mut self, _operator: Address) {
+        }
+
+        fn isOperatorFor(&mut self, _operator: Address, _token_holder: Address) -> bool {
+            false
         }
     }
 }
