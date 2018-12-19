@@ -1,5 +1,6 @@
 // pwasm contracts do not use Rust's standard library
 #![no_std]
+#![allow(non_snake_case)]
 
 mod keys;
 mod utils;
@@ -32,7 +33,48 @@ pub mod token {
         fn authorizeOperator(&mut self, operator: Address);
         fn revokeOperator(&mut self, operator: Address);
         #[constant]
-        fn isOperatorFor(&mut self, operator: Address, token_holder: Address) -> bool;
+        fn isOperatorFor(&mut self, operator: Address, tokenHolder: Address) -> bool;
+
+        fn send(&mut self, to: Address, amount: U256, data:Vec<u8>);
+        fn operatorSend(&mut self, from: Address, to: Address, amount: U256, data: Vec<u8>, operatorData: Vec<u8>);
+
+        fn burn(&mut self, amount: U256, data: Vec<u8>);
+        fn operatorBurn(&mut self, from: Address, amount: U256, data: Vec<u8>, operatorData: Vec<u8>);
+
+        #[event]
+        fn Sent(&mut self,
+                operator: Address,
+                from: Address,
+                to: Address,
+                amount: U256,
+                data: Vec<u8>,
+                operatorData: Vec<u8>
+        );
+
+        #[event]
+        fn Minted(&mut self,
+                  from: Address,
+                  to: Address,
+                  amount: U256,
+                  operatorData: Vec<u8>);
+
+        #[event]
+        fn Burned(&mut self,
+                  operator: Address,
+                  from: Address,
+                  amount: U256,
+                  data: Vec<u8>,
+                  operatorData: Vec<u8>);
+
+        #[event]
+        fn AuthorizedOperator(&mut self,
+                              operator: Address,
+                              tokenHolder: Address);
+
+        #[event]
+        fn RevokedOperator(&mut self,
+                           operator: Address,
+                           tokenHolder: Address);
     }
 
     pub struct ERC777Contract;
@@ -71,8 +113,20 @@ pub mod token {
         fn revokeOperator(&mut self, _operator: Address) {
         }
 
-        fn isOperatorFor(&mut self, _operator: Address, _token_holder: Address) -> bool {
+        fn isOperatorFor(&mut self, _operator: Address, _tokenHolder: Address) -> bool {
             false
+        }
+
+        fn send(&mut self, _to: Address, _amount: U256, _data: Vec<u8>) {
+        }
+
+        fn operatorSend(&mut self, _from: Address, _to: Address, _amount: U256, _data: Vec<u8>, _operatorData: Vec<u8>) {
+        }
+
+        fn burn(&mut self, _amount: U256, _data: Vec<u8>) {
+        }
+
+        fn operatorBurn(&mut self, _from: Address, _amount: U256, _data: Vec<u8>, _operatorData: Vec<u8>) {
         }
     }
 }
