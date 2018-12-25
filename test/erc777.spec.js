@@ -11,9 +11,12 @@ let token = {
   granularity: '0.01',
 };
 
+let accounts = [];
+
 describe('pwasm ERC777 contract', function() {
   before(async () => {
     web3.eth.defaultAccount = '0x004ec07d2329997267ec62b4166639513386f32e';
+    accounts.push(web3.eth.defaultAccount);
 
     const abi = JSON.parse(fs.readFileSync('./contracts/pwasm-erc777/target/json/ERC777Interface.json'));
     const codeHex = '0x' + fs.readFileSync('./contracts/pwasm-erc777/target/pwasm_erc777.wasm').toString('hex');
@@ -29,30 +32,15 @@ describe('pwasm ERC777 contract', function() {
     const gas = await TokenDeployTransaction.estimateGas();
     token.contract = await TokenDeployTransaction.send({ gasLimit: gas, from: web3.eth.defaultAccount });
     assert.ok(token.contract.options.address);
+
+    // create test accounts
+    let testAccountPassword = 'test1';
+    let testAccount = await web3.eth.personal.newAccount(testAccountPassword);
+    console.log(testAccount);
+    assert(await web3.eth.personal.unlockAccount(testAccount, testAccountPassword));
+    accounts.push(testAccount);
   });
 
-  describe('attributes', function() {
-    it(`should have the name "${token.name}"`, async function() {
-      const name = await token.contract.methods.name().call();
-      assert.strictEqual(name, token.name);
-    });
-    it(`should have the symbol "${token.symbol}"`, async function() {
-      const symbol = await token.contract.methods.symbol().call();
-      assert.strictEqual(symbol, token.symbol);
-    });
-    it('should have an initial total supply of 0', async function() {
-      const totalSupply = await token.contract.methods.totalSupply().call();
-      assert.equal(web3.utils.fromWei(totalSupply), 0);
-    });
-    it(`should have a granularity of ${token.granularity}`,
-      async function() {
-        const granularity = (
-          await token.contract.methods.granularity().call()).toString();
-        assert.strictEqual(
-          web3.utils.fromWei(granularity),
-          token.granularity
-        );
-      }
-    );
-  });
+  require('./utils/attributes').test(web3, accounts, token);
+  require('./utils/mint').test(web3, accounts, token);
 });

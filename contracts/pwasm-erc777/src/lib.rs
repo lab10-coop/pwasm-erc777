@@ -15,6 +15,7 @@ pub mod token {
     #[eth_abi(ERC777Endpoint, ERC777Client)]
     pub trait ERC777Interface {
         fn constructor(&mut self, name: String, symbol: String, granularity: U256);
+        fn mint(&mut self, address: Address, amount: U256, operatorData: Vec<u8>);
 
         #[constant]
         fn name(&mut self) -> String;
@@ -24,6 +25,9 @@ pub mod token {
 
         #[constant]
         fn totalSupply(&mut self) -> U256;
+
+        #[constant]
+        fn balanceOf(&mut self, owner: Address) -> U256;
 
         #[constant]
         fn granularity(&mut self) -> U256;
@@ -87,6 +91,18 @@ pub mod token {
             pwasm_ethereum::write(&granularity_key(), &granularity.into());
         }
 
+        fn mint(&mut self, address: Address, amount: U256, operatorData: Vec<u8>) {
+            pwasm_ethereum::write(&total_supply_key(),
+                                  &self.totalSupply()
+                                      .saturating_add(amount).into());
+
+            pwasm_ethereum::write(&balance_key(&address),
+                                  &read_balance_of(&address)
+                                      .saturating_add(amount).into());
+
+            self.Minted(Address::zero(), address, amount, operatorData);
+        }
+
         fn name(&mut self) -> String {
             read_string(&name_key())
         }
@@ -97,6 +113,10 @@ pub mod token {
 
         fn totalSupply(&mut self) -> U256 {
             U256::from_big_endian(&pwasm_ethereum::read(&total_supply_key()))
+        }
+
+        fn balanceOf(&mut self, owner: Address) -> U256 {
+            U256::from_big_endian(&pwasm_ethereum::read(&balance_key(&owner)))
         }
 
         fn granularity(&mut self) -> U256 {
@@ -128,6 +148,11 @@ pub mod token {
 
         fn operatorBurn(&mut self, _from: Address, _amount: U256, _data: Vec<u8>, _operatorData: Vec<u8>) {
         }
+    }
+
+    // Reads balance by address
+    fn read_balance_of(owner: &Address) -> U256 {
+        U256::from_big_endian(&pwasm_ethereum::read(&balance_key(owner)))
     }
 }
 
