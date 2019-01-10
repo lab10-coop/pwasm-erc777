@@ -21,7 +21,7 @@ pub mod token {
         fn name(&mut self) -> String;
 
         #[constant]
-        fn symbol(&mut self)-> String;
+        fn symbol(&mut self) -> String;
 
         #[constant]
         fn totalSupply(&mut self) -> U256;
@@ -39,7 +39,7 @@ pub mod token {
         #[constant]
         fn isOperatorFor(&mut self, operator: Address, tokenHolder: Address) -> bool;
 
-        fn send(&mut self, to: Address, amount: U256, data:Vec<u8>);
+        fn send(&mut self, to: Address, amount: U256, data: Vec<u8>);
         fn operatorSend(&mut self, from: Address, to: Address, amount: U256, data: Vec<u8>, operatorData: Vec<u8>);
 
         fn burn(&mut self, amount: U256, data: Vec<u8>);
@@ -52,7 +52,7 @@ pub mod token {
                 to: Address,
                 amount: U256,
                 data: Vec<u8>,
-                operatorData: Vec<u8>
+                operatorData: Vec<u8>,
         );
 
         #[event]
@@ -84,7 +84,6 @@ pub mod token {
     pub struct ERC777Contract;
 
     impl ERC777Interface for ERC777Contract {
-
         fn constructor(&mut self, name: String, symbol: String, granularity: U256) {
             write_string(&name_key(), &name);
             write_string(&symbol_key(), &symbol);
@@ -107,7 +106,7 @@ pub mod token {
             read_string(&name_key())
         }
 
-        fn symbol(&mut self)-> String {
+        fn symbol(&mut self) -> String {
             read_string(&symbol_key())
         }
 
@@ -127,27 +126,21 @@ pub mod token {
             Vec::new()
         }
 
-        fn authorizeOperator(&mut self, _operator: Address) {
-        }
+        fn authorizeOperator(&mut self, _operator: Address) {}
 
-        fn revokeOperator(&mut self, _operator: Address) {
-        }
+        fn revokeOperator(&mut self, _operator: Address) {}
 
         fn isOperatorFor(&mut self, _operator: Address, _tokenHolder: Address) -> bool {
             false
         }
 
-        fn send(&mut self, _to: Address, _amount: U256, _data: Vec<u8>) {
-        }
+        fn send(&mut self, _to: Address, _amount: U256, _data: Vec<u8>) {}
 
-        fn operatorSend(&mut self, _from: Address, _to: Address, _amount: U256, _data: Vec<u8>, _operatorData: Vec<u8>) {
-        }
+        fn operatorSend(&mut self, _from: Address, _to: Address, _amount: U256, _data: Vec<u8>, _operatorData: Vec<u8>) {}
 
-        fn burn(&mut self, _amount: U256, _data: Vec<u8>) {
-        }
+        fn burn(&mut self, _amount: U256, _data: Vec<u8>) {}
 
-        fn operatorBurn(&mut self, _from: Address, _amount: U256, _data: Vec<u8>, _operatorData: Vec<u8>) {
-        }
+        fn operatorBurn(&mut self, _from: Address, _amount: U256, _data: Vec<u8>, _operatorData: Vec<u8>) {}
     }
 
     // Reads balance by address
@@ -162,14 +155,14 @@ use pwasm_abi::eth::EndpointInterface;
 /// Will be described in the next step
 #[no_mangle]
 pub fn deploy() {
-    let mut endpoint = token::ERC777Endpoint::new(token::ERC777Contract{});
+    let mut endpoint = token::ERC777Endpoint::new(token::ERC777Contract {});
     endpoint.dispatch_ctor(&pwasm_ethereum::input());
 }
 
 /// The call function is the main function of the *deployed* contract
 #[no_mangle]
 pub fn call() {
-    let mut endpoint = token::ERC777Endpoint::new(token::ERC777Contract{});
+    let mut endpoint = token::ERC777Endpoint::new(token::ERC777Contract {});
     pwasm_ethereum::ret(&endpoint.dispatch(&pwasm_ethereum::input()));
 }
 
@@ -179,14 +172,15 @@ mod tests {
     use crate::token::ERC777Interface;
     use pwasm_std::String;
     use pwasm_abi::types::*;
-    use pwasm_test::{ext_reset};
+    use pwasm_test::ext_reset;
+    use pwasm_std::keccak;
 
     static TEST_NAME: &'static str = "TestToken";
     static TEST_SYMBOL: &'static str = "TTK";
     static TEST_GRANULARITY: u64 = 100000000000000;
 
     fn init_test_contract() -> token::ERC777Contract {
-        let mut contract = token::ERC777Contract{};
+        let mut contract = token::ERC777Contract {};
         let owner_address = Address::from([0xea, 0x67, 0x4f, 0xdd, 0xe7, 0x14, 0xfd, 0x97, 0x9d, 0xe3, 0xed, 0xf0, 0xf5, 0x6a, 0xa9, 0x71, 0x6b, 0x89, 0x8e, 0xc8]);
         // Here we're creating an External context using ExternalBuilder and set the `sender` to the `owner_address`
         ext_reset(|e| e.sender(owner_address.clone()));
@@ -219,5 +213,13 @@ mod tests {
     fn should_set_and_retrieve_granularity() {
         let mut contract = init_test_contract();
         assert_eq!(contract.granularity(), U256::from(TEST_GRANULARITY));
+    }
+
+    keccak_derive::compiletime_keccak!(hashed_string);
+
+    #[test]
+    fn compare_compile_time_to_runtime_keccak() {
+        let hash = keccak(b"hashed_string");
+        assert_eq!(hashed_string(), hash);
     }
 }

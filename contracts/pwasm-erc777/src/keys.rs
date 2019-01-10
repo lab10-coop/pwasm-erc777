@@ -1,23 +1,12 @@
 /// "Eternal Storage" keys used in the ERC777 contract implementation
 
-use pwasm_std::keccak;
-use pwasm_abi::types::{ H256, Address };
+use keccak_derive::compiletime_keccak;
+use pwasm_abi::types::{H256, Address};
 
-pub fn name_key() -> H256 {
-    keccak(b"NAME_KEY")
-}
-
-pub fn symbol_key() -> H256 {
-    keccak(b"SYMBOL_KEY")
-}
-
-pub fn total_supply_key() -> H256 {
-    keccak(b"TOTAL_SUPPLY_KEY")
-}
-
-pub fn granularity_key() -> H256 {
-    keccak(b"GRANULARITY_KEY")
-}
+compiletime_keccak!(name_key);
+compiletime_keccak!(symbol_key);
+compiletime_keccak!(total_supply_key);
+compiletime_keccak!(granularity_key);
 
 pub fn balance_key(address: &Address) -> H256 {
     let mut key = H256::from(*address);

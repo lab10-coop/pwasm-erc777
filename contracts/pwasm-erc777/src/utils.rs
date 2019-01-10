@@ -27,7 +27,7 @@ pub fn read_string(location: &H256) -> String {
     let mut remaining = U256::from(&pwasm_ethereum::read(location)).low_u64() as usize;
     let mut idx = 1;
     while remaining > 0 {
-        let to_read = if remaining >= 32 {32} else {remaining};
+        let to_read = if remaining >= 32 { 32 } else { remaining };
         let indexed_location = U256::from(location.as_ref()).overflowing_add(U256::from(idx)).0;
         reconstructed.extend_from_slice(&H256::from(&pwasm_ethereum::read(&indexed_location.into())).as_ref()[..remaining]);
         remaining -= to_read;
