@@ -20,6 +20,13 @@ exports.test = function(web3, accounts, token) {
               amount: web3.utils.toWei('10'),
               operatorData: null,
             },
+          }, {
+            name: 'Transfer',
+            data: {
+              from: utils.zeroAddress,
+              to: web3.utils.toChecksumAddress(accounts[1]),
+              amount: web3.utils.toWei('10'),
+            },
           }]
         );
 

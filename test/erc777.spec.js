@@ -35,6 +35,10 @@ describe('pwasm ERC777 contract', function() {
     token.contract = await TokenDeployTransaction.send({ gasLimit: gas, from: web3.eth.defaultAccount });
     assert.ok(token.contract.options.address);
 
+    await token.contract.methods
+      .enableERC20()
+      .send({ gas: 300000, from: accounts[0] });
+
     // create test accounts
     let testAccountPassword = 'test1';
     let testAccount = await web3.eth.personal.newAccount(testAccountPassword);

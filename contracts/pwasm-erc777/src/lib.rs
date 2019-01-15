@@ -15,7 +15,7 @@ pub mod token {
     #[eth_abi(ERC777Endpoint, ERC777Client)]
     pub trait ERC777Interface {
         fn constructor(&mut self, name: String, symbol: String, granularity: U256);
-        fn mint(&mut self, address: Address, amount: U256, operatorData: Vec<u8>);
+        fn mint(&mut self, tokenHolder: Address, amount: U256, operatorData: Vec<u8>);
 
         #[constant]
         fn name(&mut self) -> String;
@@ -44,6 +44,9 @@ pub mod token {
 
         fn burn(&mut self, amount: U256, data: Vec<u8>);
         fn operatorBurn(&mut self, from: Address, amount: U256, data: Vec<u8>, operatorData: Vec<u8>);
+
+        fn disableERC20(&mut self);
+        fn enableERC20(&mut self);
 
         #[event]
         fn Sent(&mut self,
@@ -79,6 +82,15 @@ pub mod token {
         fn RevokedOperator(&mut self,
                            operator: Address,
                            tokenHolder: Address);
+
+        #[event]
+        fn ERC20Enabled(&mut self);
+
+        #[event]
+        fn ERC20Disabled(&mut self);
+
+        #[event]
+        fn Transfer(&mut self, from: Address, to: Address, amount: U256);
     }
 
     pub struct ERC777Contract;
@@ -90,16 +102,19 @@ pub mod token {
             pwasm_ethereum::write(&granularity_key(), &granularity.into());
         }
 
-        fn mint(&mut self, address: Address, amount: U256, operatorData: Vec<u8>) {
+        fn mint(&mut self, tokenHolder: Address, amount: U256, operatorData: Vec<u8>) {
             pwasm_ethereum::write(&total_supply_key(),
                                   &self.totalSupply()
                                       .saturating_add(amount).into());
 
-            pwasm_ethereum::write(&balance_key(&address),
-                                  &read_balance_of(&address)
+            pwasm_ethereum::write(&balance_key(&tokenHolder),
+                                  &read_balance_of(&tokenHolder)
                                       .saturating_add(amount).into());
 
-            self.Minted(pwasm_ethereum::sender(), address, amount, operatorData);
+            self.Minted(pwasm_ethereum::sender(), tokenHolder, amount, operatorData);
+            if erc20_compatible() {
+                self.Transfer(Address::zero(), tokenHolder, amount);
+            }
         }
 
         fn name(&mut self) -> String {
@@ -141,6 +156,13 @@ pub mod token {
         fn burn(&mut self, _amount: U256, _data: Vec<u8>) {}
 
         fn operatorBurn(&mut self, _from: Address, _amount: U256, _data: Vec<u8>, _operatorData: Vec<u8>) {}
+
+        fn disableERC20(&mut self) {
+            pwasm_ethereum::write(&erc20_compatibility_key(), &U256::zero().into());
+        }
+        fn enableERC20(&mut self) {
+            pwasm_ethereum::write(&erc20_compatibility_key(), &U256::one().into());
+        }
     }
 
     // Reads balance by address

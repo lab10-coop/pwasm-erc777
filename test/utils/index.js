@@ -9,6 +9,7 @@ async function assertBalance(web3, token, account, expected) {
 }
 
 const log = (msg) => process.env.MOCHA_VERBOSE && console.log(msg);
+const zeroAddress = '0x0000000000000000000000000000000000000000';
 
 function assertEventWillBeCalled(contract, name, data) {
   return new Promise((resolve, reject) => {
@@ -30,6 +31,7 @@ function assertEventsWillBeCalled(contract, events) {
 module.exports = {
   assertBalance,
   log,
+  zeroAddress,
   assertEventWillBeCalled,
   assertEventsWillBeCalled,
 };
