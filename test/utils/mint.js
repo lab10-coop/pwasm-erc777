@@ -11,11 +11,24 @@ exports.test = function(web3, accounts, token) {
       async function() {
         await utils.assertBalance(web3, token, accounts[1], 0);
 
+        let eventsCalled = utils.assertEventsWillBeCalled(
+          token.contract, [{
+            name: 'Minted',
+            data: {
+              operator: web3.utils.toChecksumAddress(accounts[0]),
+              to: web3.utils.toChecksumAddress(accounts[1]),
+              amount: web3.utils.toWei('10'),
+              operatorData: null,
+            },
+          }]
+        );
+
         await token.contract.methods
           .mint(accounts[1], web3.utils.toWei('10'), '0x')
           .send({ gas: 300000, from: accounts[0] });
 
         await utils.assertBalance(web3, token, accounts[1], 10);
+        await eventsCalled;
       }
     );
   });

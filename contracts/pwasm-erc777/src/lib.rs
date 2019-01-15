@@ -57,7 +57,7 @@ pub mod token {
 
         #[event]
         fn Minted(&mut self,
-                  from: Address,
+                  operator: Address,
                   to: Address,
                   amount: U256,
                   operatorData: Vec<u8>);
@@ -99,7 +99,7 @@ pub mod token {
                                   &read_balance_of(&address)
                                       .saturating_add(amount).into());
 
-            self.Minted(Address::zero(), address, amount, operatorData);
+            self.Minted(pwasm_ethereum::sender(), address, amount, operatorData);
         }
 
         fn name(&mut self) -> String {

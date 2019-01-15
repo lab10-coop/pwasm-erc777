@@ -3,7 +3,7 @@ const fs = require('fs');
 const chai = require('chai');
 const assert = chai.assert;
 
-const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
+const web3 = new Web3(new Web3.providers.WebsocketProvider('ws://localhost:8546'));
 
 let token = {
   name: 'ReferenceToken',
@@ -14,8 +14,10 @@ let token = {
 let accounts = [];
 
 describe('pwasm ERC777 contract', function() {
+  this.timeout(5000);
+
   before(async () => {
-    web3.eth.defaultAccount = '0x004ec07d2329997267ec62b4166639513386f32e';
+    web3.eth.defaultAccount = '0x004ec07d2329997267Ec62b4166639513386F32E';
     accounts.push(web3.eth.defaultAccount);
 
     const abi = JSON.parse(fs.readFileSync('./contracts/pwasm-erc777/target/json/ERC777Interface.json'));
@@ -43,4 +45,9 @@ describe('pwasm ERC777 contract', function() {
 
   require('./utils/attributes').test(web3, accounts, token);
   require('./utils/mint').test(web3, accounts, token);
+
+  after(function() {
+    // Close the connection to allow this process to end
+    web3.currentProvider.connection.close();
+  });
 });
