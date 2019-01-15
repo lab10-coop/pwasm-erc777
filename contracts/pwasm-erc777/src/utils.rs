@@ -35,3 +35,9 @@ pub fn read_string(location: &H256) -> String {
     }
     String::from(from_utf8(&reconstructed).unwrap())
 }
+
+pub fn require(cond: bool, msg: &'static str) {
+    if !cond {
+        panic!(msg);
+    }
+}

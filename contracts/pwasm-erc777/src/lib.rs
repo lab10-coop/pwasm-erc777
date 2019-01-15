@@ -95,6 +95,17 @@ pub mod token {
 
     pub struct ERC777Contract;
 
+    impl ERC777Contract {
+
+        fn require_multiple(&mut self, _amount: &U256) {
+            // Any multiplication of U256 causes duplicate symbol linker errors (e.g. memset, memcpy, etc.)
+            // @todo Investigate solutions to this issue. This check *is* performed in the Solidity version of the ERC777 contract.
+//            require(amount % self.granularity() == U256::zero(),
+//                    "Amount is not a multiple of granularity");
+        }
+
+    }
+
     impl ERC777Interface for ERC777Contract {
         fn constructor(&mut self, name: String, symbol: String, granularity: U256) {
             write_string(&name_key(), &name);
@@ -103,6 +114,7 @@ pub mod token {
         }
 
         fn mint(&mut self, tokenHolder: Address, amount: U256, operatorData: Vec<u8>) {
+            self.require_multiple(&amount);
             pwasm_ethereum::write(&total_supply_key(),
                                   &self.totalSupply()
                                       .saturating_add(amount).into());

@@ -38,5 +38,66 @@ exports.test = function(web3, accounts, token) {
         await eventsCalled;
       }
     );
+
+    it(`should mint 10 ${token.symbol} for ` + `${accounts[1]} ` + '(ERC20 Disabled)',
+      async function() {
+        await utils.assertBalance(web3, token, accounts[1], 10);
+        
+        let eventCalled = utils.assertEventWillBeCalled(
+          token.contract, 'Minted', {
+            operator: web3.utils.toChecksumAddress(accounts[0]),
+            to: web3.utils.toChecksumAddress(accounts[1]),
+            amount: web3.utils.toWei('10'),
+            operatorData: null,
+          }
+        );
+  
+        await token.contract.methods
+          .disableERC20()
+          .send({ gas: 300000, from: accounts[0] });
+  
+        await token.contract.methods
+          .mint(accounts[1], web3.utils.toWei('10'), '0x')
+          .send({ gas: 300000, from: accounts[0] });
+
+        await utils.assertBalance(web3, token, accounts[1], 20);
+        await eventCalled;
+
+        await token.contract.methods
+          .enableERC20()
+          .send({ gas: 300000, from: accounts[0] });
+      }
+    );
+
+    // deactivated due to compile errors in the pwasm contract when
+    // a U256 multiply operation is performed.
+    xit(`should not mint -10 ${token.symbol} (negative amount)`,
+      async function() {
+        await utils.assertBalance(web3, token, accounts[1], 20);
+
+        await token.contract.methods
+          .mint(accounts[1], web3.utils.toWei('-10'), '0x')
+          .send({ gas: 300000, from: accounts[0] })
+          .should.be.rejectedWith('revert');
+
+        await utils.assertBalance(web3, token, accounts[1], 20);
+      }
+    );
+
+    // deactivated due to compile errors in the pwasm contract when
+    // a U256 multiply operation is performed.
+    xit(`should not mint 0.007 ${token.symbol} (< granulairty)`,
+      async function() {
+        await utils.assertBalance(web3, token, accounts[1], 20);
+
+        await token.contract.methods
+          .mint(accounts[1], web3.utils.toWei('0.007'), '0x')
+          .send({ gas: 300000, from: accounts[0] })
+          .should.be.rejectedWith('revert');
+
+        await utils.getBlock(web3);
+        await utils.assertBalance(web3, token, accounts[1], 20);
+      }
+    );
   });
 };

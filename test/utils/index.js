@@ -28,10 +28,15 @@ function assertEventsWillBeCalled(contract, events) {
     .map(event => assertEventWillBeCalled(contract, event.name, event.data)));
 }
 
+function formatAccount(account) {
+  return account.slice(0, 8);
+}
+
 module.exports = {
   assertBalance,
   log,
   zeroAddress,
   assertEventWillBeCalled,
   assertEventsWillBeCalled,
+  formatAccount,
 };
