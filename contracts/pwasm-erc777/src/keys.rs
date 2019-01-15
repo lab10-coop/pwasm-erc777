@@ -3,6 +3,7 @@
 use keccak_derive::compiletime_keccak;
 use pwasm_abi::types::{H256, U256, Address};
 
+compiletime_keccak!(owner_key);
 compiletime_keccak!(name_key);
 compiletime_keccak!(symbol_key);
 compiletime_keccak!(total_supply_key);

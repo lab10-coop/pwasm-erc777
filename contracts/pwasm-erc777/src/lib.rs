@@ -96,7 +96,6 @@ pub mod token {
     pub struct ERC777Contract;
 
     impl ERC777Contract {
-
         fn require_multiple(&mut self, _amount: &U256) {
             // Any multiplication of U256 causes duplicate symbol linker errors (e.g. memset, memcpy, etc.)
             // @todo Investigate solutions to this issue. This check *is* performed in the Solidity version of the ERC777 contract.
@@ -104,23 +103,29 @@ pub mod token {
 //                    "Amount is not a multiple of granularity");
         }
 
+        pub fn require_sufficient_funds(&mut self, address: &Address, amount: &U256) {
+            require(self.balanceOf(*address) >= *amount, "Not enough funds");
+        }
     }
 
     impl ERC777Interface for ERC777Contract {
         fn constructor(&mut self, name: String, symbol: String, granularity: U256) {
+            pwasm_ethereum::write(&owner_key(), &H256::from(pwasm_ethereum::sender()).into());
             write_string(&name_key(), &name);
             write_string(&symbol_key(), &symbol);
             pwasm_ethereum::write(&granularity_key(), &granularity.into());
         }
 
         fn mint(&mut self, tokenHolder: Address, amount: U256, operatorData: Vec<u8>) {
+            require_owner();
+
             self.require_multiple(&amount);
             pwasm_ethereum::write(&total_supply_key(),
                                   &self.totalSupply()
                                       .saturating_add(amount).into());
 
             pwasm_ethereum::write(&balance_key(&tokenHolder),
-                                  &read_balance_of(&tokenHolder)
+                                  &self.balanceOf(tokenHolder)
                                       .saturating_add(amount).into());
 
             self.Minted(pwasm_ethereum::sender(), tokenHolder, amount, operatorData);
@@ -165,21 +170,39 @@ pub mod token {
 
         fn operatorSend(&mut self, _from: Address, _to: Address, _amount: U256, _data: Vec<u8>, _operatorData: Vec<u8>) {}
 
-        fn burn(&mut self, _amount: U256, _data: Vec<u8>) {}
+        fn burn(&mut self, amount: U256, data: Vec<u8>) {
+            self.require_multiple(&amount);
+            self.require_sufficient_funds(&pwasm_ethereum::sender(), &amount);
+
+            pwasm_ethereum::write(&balance_key(&pwasm_ethereum::sender()),
+                                  &self.balanceOf(pwasm_ethereum::sender())
+                                      .saturating_sub(amount).into());
+
+            pwasm_ethereum::write(&total_supply_key(),
+                                  &self.totalSupply()
+                                      .saturating_sub(amount).into());
+
+            self.Burned(pwasm_ethereum::sender(),
+                        pwasm_ethereum::sender(),
+                        amount,
+                        data,
+                        Vec::new());
+
+            if erc20_compatible() {
+                self.Transfer(pwasm_ethereum::sender(), Address::zero(), amount);
+            }
+        }
 
         fn operatorBurn(&mut self, _from: Address, _amount: U256, _data: Vec<u8>, _operatorData: Vec<u8>) {}
 
         fn disableERC20(&mut self) {
+            require_owner();
             pwasm_ethereum::write(&erc20_compatibility_key(), &U256::zero().into());
         }
         fn enableERC20(&mut self) {
+            require_owner();
             pwasm_ethereum::write(&erc20_compatibility_key(), &U256::one().into());
         }
-    }
-
-    // Reads balance by address
-    fn read_balance_of(owner: &Address) -> U256 {
-        U256::from_big_endian(&pwasm_ethereum::read(&balance_key(owner)))
     }
 }
 

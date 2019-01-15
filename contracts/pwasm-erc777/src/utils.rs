@@ -1,6 +1,7 @@
 use pwasm_std::String;
 use pwasm_std::str::from_utf8;
-use pwasm_abi::types::{H256, U256, Vec};
+use pwasm_abi::types::{H256, U256, Vec, Address};
+use crate::keys::*;
 
 pub fn write_string(location: &H256, name: &String) {
     let bytes = name.as_bytes();
@@ -40,4 +41,9 @@ pub fn require(cond: bool, msg: &'static str) {
     if !cond {
         panic!(msg);
     }
+}
+
+pub fn require_owner() {
+    require(pwasm_ethereum::sender() == Address::from(H256::from(&pwasm_ethereum::read(&owner_key()))),
+            "Sender needs to be the contract owner");
 }

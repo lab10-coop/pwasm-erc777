@@ -1,5 +1,6 @@
 const Web3 = require('web3');
 const fs = require('fs');
+const utils = require('./utils/index');
 const chai = require('chai');
 const assert = chai.assert;
 
@@ -18,7 +19,6 @@ describe('pwasm ERC777 contract', function() {
 
   before(async () => {
     web3.eth.defaultAccount = '0x004ec07d2329997267Ec62b4166639513386F32E';
-    accounts.push(web3.eth.defaultAccount);
 
     const abi = JSON.parse(fs.readFileSync('./contracts/pwasm-erc777/target/json/ERC777Interface.json'));
     const codeHex = '0x' + fs.readFileSync('./contracts/pwasm-erc777/target/pwasm_erc777.wasm').toString('hex');
@@ -35,20 +35,22 @@ describe('pwasm ERC777 contract', function() {
     token.contract = await TokenDeployTransaction.send({ gasLimit: gas, from: web3.eth.defaultAccount });
     assert.ok(token.contract.options.address);
 
+    // Activate ERC20 compatibility
     await token.contract.methods
       .enableERC20()
       .send({ gas: 300000, from: accounts[0] });
 
-    // create test accounts
-    let testAccountPassword = 'test1';
-    let testAccount = await web3.eth.personal.newAccount(testAccountPassword);
-    console.log(testAccount);
-    assert(await web3.eth.personal.unlockAccount(testAccount, testAccountPassword));
-    accounts.push(testAccount);
+    await utils.initAccounts(web3, accounts);
+  });
+
+  beforeEach(async () => {
+    //  await utils.wipeAccounts(web3, accounts, token);
   });
 
   require('./utils/attributes').test(web3, accounts, token);
   require('./utils/mint').test(web3, accounts, token);
+  require('./utils/burn').test(web3, accounts, token);
+  require('./utils/send').test(web3, accounts, token);
 
   after(function() {
     // Close the connection to allow this process to end
