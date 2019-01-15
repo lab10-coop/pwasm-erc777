@@ -104,7 +104,7 @@ pub mod token {
         }
 
         pub fn require_sufficient_funds(&mut self, address: &Address, amount: &U256) {
-            require(self.balanceOf(*address) >= *amount, "Not enough funds");
+            require(read_balance_of(address) >= *amount, "Not enough funds");
         }
     }
 
@@ -125,7 +125,7 @@ pub mod token {
                                       .saturating_add(amount).into());
 
             pwasm_ethereum::write(&balance_key(&tokenHolder),
-                                  &self.balanceOf(tokenHolder)
+                                  &read_balance_of(&tokenHolder)
                                       .saturating_add(amount).into());
 
             self.Minted(pwasm_ethereum::sender(), tokenHolder, amount, operatorData);
@@ -147,7 +147,7 @@ pub mod token {
         }
 
         fn balanceOf(&mut self, owner: Address) -> U256 {
-            U256::from_big_endian(&pwasm_ethereum::read(&balance_key(&owner)))
+            read_balance_of(&owner)
         }
 
         fn granularity(&mut self) -> U256 {
@@ -175,7 +175,7 @@ pub mod token {
             self.require_sufficient_funds(&pwasm_ethereum::sender(), &amount);
 
             pwasm_ethereum::write(&balance_key(&pwasm_ethereum::sender()),
-                                  &self.balanceOf(pwasm_ethereum::sender())
+                                  &read_balance_of(&pwasm_ethereum::sender())
                                       .saturating_sub(amount).into());
 
             pwasm_ethereum::write(&total_supply_key(),

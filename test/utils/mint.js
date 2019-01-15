@@ -41,7 +41,7 @@ exports.test = function(web3, accounts, token) {
 
     it(`should mint 10 ${token.symbol} for ` + `${accounts[1]} ` + '(ERC20 Disabled)',
       async function() {
-        await utils.assertBalance(web3, token, accounts[1], 10);
+        await utils.assertBalance(web3, token, accounts[1], 0);
         
         let eventCalled = utils.assertEventWillBeCalled(
           token.contract, 'Minted', {
@@ -60,7 +60,7 @@ exports.test = function(web3, accounts, token) {
           .mint(accounts[1], web3.utils.toWei('10'), '0x')
           .send({ gas: 300000, from: accounts[0] });
 
-        await utils.assertBalance(web3, token, accounts[1], 20);
+        await utils.assertBalance(web3, token, accounts[1], 10);
         await eventCalled;
 
         await token.contract.methods

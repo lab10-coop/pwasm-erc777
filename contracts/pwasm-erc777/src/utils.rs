@@ -3,6 +3,20 @@ use pwasm_std::str::from_utf8;
 use pwasm_abi::types::{H256, U256, Vec, Address};
 use crate::keys::*;
 
+/// panics if the given condition is false
+pub fn require(cond: bool, msg: &'static str) {
+    if !cond {
+        panic!(msg);
+    }
+}
+
+/// panics if the sender is not equal to the owner of the ERC777 contract
+pub fn require_owner() {
+    require(pwasm_ethereum::sender() == Address::from(H256::from(&pwasm_ethereum::read(&owner_key()))),
+            "Sender needs to be the contract owner");
+}
+
+/// writes the given string to sequential blocks at the given location in storage
 pub fn write_string(location: &H256, name: &String) {
     let bytes = name.as_bytes();
     let string_length = U256::from(bytes.len() as u64);
@@ -23,6 +37,7 @@ pub fn write_string(location: &H256, name: &String) {
     }
 }
 
+/// reads a string from sequential blocks at the given location in storage
 pub fn read_string(location: &H256) -> String {
     let mut reconstructed: Vec<u8> = Vec::new();
     let mut remaining = U256::from(&pwasm_ethereum::read(location)).low_u64() as usize;
@@ -37,13 +52,7 @@ pub fn read_string(location: &H256) -> String {
     String::from(from_utf8(&reconstructed).unwrap())
 }
 
-pub fn require(cond: bool, msg: &'static str) {
-    if !cond {
-        panic!(msg);
-    }
-}
-
-pub fn require_owner() {
-    require(pwasm_ethereum::sender() == Address::from(H256::from(&pwasm_ethereum::read(&owner_key()))),
-            "Sender needs to be the contract owner");
+// Reads balance by address
+pub fn read_balance_of(owner: &Address) -> U256 {
+    U256::from_big_endian(&pwasm_ethereum::read(&balance_key(owner)))
 }

@@ -44,7 +44,7 @@ describe('pwasm ERC777 contract', function() {
   });
 
   beforeEach(async () => {
-    //  await utils.wipeAccounts(web3, accounts, token);
+    await utils.wipeTokenBalances(web3, accounts, token);
   });
 
   require('./utils/attributes').test(web3, accounts, token);
