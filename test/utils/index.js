@@ -61,6 +61,13 @@ async function mintForAllAccounts(web3, accounts, token, amount) {
   }
 }
 
+async function assertTotalSupply(web3, token, expected) {
+  const totalSupply = (
+    await token.contract.methods.totalSupply().call()).toString();
+  assert.equal(web3.utils.fromWei(totalSupply), expected);
+  log(`totalSupply: ${web3.utils.fromWei(totalSupply)}`);
+}
+
 async function wipeTokenBalances(web3, accounts, token) {
   for (let i = 0; i < accounts.length; ++i) {
     let balance = await getBalance(web3, token, accounts[i]);
@@ -70,11 +77,7 @@ async function wipeTokenBalances(web3, accounts, token) {
       .send({ gas: 300000, from: accounts[i] });
     await assertBalance(web3, token, accounts[i], '0');
   }
-  accounts.slice(1, accounts.length).forEach(async (a) => {
-    const balance = (
-      await token.contract.methods.balanceOf(a).call()).toString();
-    assert.equal(web3.utils.fromWei(balance), 0);
-  });
+  await assertTotalSupply(web3, token, '0');
 }
 
 module.exports = {
