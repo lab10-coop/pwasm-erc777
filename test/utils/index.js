@@ -45,6 +45,14 @@ async function initAccounts(web3, accounts) {
   // create test accounts
   for (let i = 0; i < 2; ++i) {
     let testAccount = await web3.eth.personal.newAccount(password);
+    // Transfer some funds to it for transactions
+    await web3.eth.sendTransaction({
+      from: web3.eth.defaultAccount,
+      to: testAccount,
+      value: web3.utils.toWei('0.5'),
+      gas: 21000,
+      gasPrice: 20000000000,
+    });
     accounts.push(testAccount);
   }
 }
