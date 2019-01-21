@@ -9,6 +9,8 @@ compiletime_keccak!(symbol_key);
 compiletime_keccak!(total_supply_key);
 compiletime_keccak!(granularity_key);
 compiletime_keccak!(erc20_compatibility_key);
+compiletime_keccak!(ERC777TokensSender_key);
+compiletime_keccak!(ERC777TokensRecipient_key);
 
 pub fn balance_key(address: &Address) -> H256 {
     let mut key = H256::from(*address);

@@ -112,6 +112,10 @@ pub mod token {
         }
     }
 
+    use crate::ERC820Registry::*;
+    use crate::ERC777TokensRecipient::*;
+    use crate::ERC777TokensSender::*;
+
     impl ERC777Interface for ERC777Contract {
         fn constructor(&mut self, name: String, symbol: String, granularity: U256) {
             pwasm_ethereum::write(&owner_key(), &H256::from(pwasm_ethereum::sender()).into());
@@ -175,6 +179,22 @@ pub mod token {
             self.require_sufficient_funds(&pwasm_ethereum::sender(), &amount);
             require(to != H160::zero(), "Cannot send to 0x0");
 
+            let mut registry = ERC820RegistryClient::new(Address::from([0x82, 0x0b, 0x58, 0x6C, 0x8C, 0x28, 0x12, 0x53, 0x66, 0xC9, 0x98, 0x64, 0x1B, 0x09, 0xDC, 0xbE, 0x7d, 0x4c, 0xBF, 0x06]));
+
+            let sender_hook = registry.getInterfaceImplementer(pwasm_ethereum::sender(), ERC777TokensSender_key().into());
+
+            // Call ERC777 sender hook if present
+            if sender_hook != Address::zero() {
+                let mut sender = ERC777TokensSenderClient::new(sender_hook);
+                sender.tokensToSend(
+                    pwasm_ethereum::sender(),
+                    pwasm_ethereum::sender(),
+                    to,
+                    amount,
+                    data.clone(),
+                    Vec::new());
+            }
+
             pwasm_ethereum::write(&balance_key(&pwasm_ethereum::sender()),
                                   &read_balance_of(&pwasm_ethereum::sender())
                                       .saturating_sub(amount).into());
@@ -182,6 +202,20 @@ pub mod token {
             pwasm_ethereum::write(&balance_key(&to),
                                   &read_balance_of(&to)
                                       .saturating_add(amount).into());
+
+            let recipient_hook = registry.getInterfaceImplementer(to, ERC777TokensRecipient_key().into());
+
+            // Call ERC777 recipient hook if present
+            if recipient_hook != Address::zero() {
+                let mut recipient = ERC777TokensRecipientClient::new(recipient_hook);
+                recipient.tokensReceived(
+                    pwasm_ethereum::sender(),
+                    pwasm_ethereum::sender(),
+                    to,
+                    amount,
+                    data.clone(),
+                    Vec::new());
+            }
 
             self.Sent(pwasm_ethereum::sender(),
                       pwasm_ethereum::sender(),
