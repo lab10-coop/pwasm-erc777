@@ -4,6 +4,10 @@
 
 mod keys;
 mod utils;
+mod ERC820Registry;
+mod ERC777TokensRecipient;
+mod ERC777TokensSender;
+
 
 pub mod token {
     use pwasm_std::String;
