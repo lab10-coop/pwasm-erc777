@@ -10,6 +10,7 @@ let token = {
   name: 'ReferenceToken',
   symbol: 'XRT',
   granularity: '0.01',
+  initialSupply: 0,
 };
 
 let accounts = [];

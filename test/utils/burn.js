@@ -45,5 +45,72 @@ exports.test = function(web3, accounts, token) {
         await eventsCalled;
       }
     );
+
+    it(`should let account 0 burn 3 ${token.symbol}` +
+      ' (ERC20 Disabled)', async function() {
+      await utils.assertBalance(web3, token, accounts[0], 10);
+      await token.contract.methods
+        .disableERC20()
+        .send({ gas: 300000, from: accounts[0] });
+
+      let eventCalled = utils.assertEventWillBeCalled(
+        token.contract,
+        'Burned', {
+          operator: accounts[0],
+          from: accounts[0],
+          amount: web3.utils.toWei('3'),
+          data: '0xcafe',
+          operatorData: null,
+        }
+      );
+
+      await token.contract.methods
+        .burn(web3.utils.toWei('3'), '0xcafe')
+        .send({ gas: 300000, from: accounts[0] });
+
+      await utils.assertBalance(
+        web3, token, accounts[0], 7);
+      await utils.assertTotalSupply(
+        web3, token, 10 * accounts.length - 3);
+      await eventCalled;
+
+      await token.contract.methods
+        .enableERC20()
+        .send({ gas: 300000, from: accounts[0] });
+    });
+
+    it('should not let account 0 burn -3 ' +
+      `${token.symbol} (negative amount)`, async function() {
+      await utils.assertBalance(
+        web3, token, accounts[0], token.initialSupply + 10);
+
+      await token.contract.methods
+        .burn(web3.utils.toWei('-3'), '0x')
+        .send({ gas: 300000, from: accounts[0] })
+        .should.be.rejectedWith('revert');
+
+      await utils.assertBalance(
+        web3, token, accounts[0], token.initialSupply + 10);
+      await utils.assertTotalSupply(
+        web3, token, 10 * accounts.length + token.initialSupply);
+    });
+
+    // deactivated due to compile errors in the pwasm contract when
+    // a U256 multiply operation is performed.
+    xit('should not let account 1 burn 0.007 ' +
+      `${token.symbol} (< granularity)`, async function() {
+      await utils.assertBalance(
+        web3, token, accounts[0], token.initialSupply + 10);
+
+      await token.contract.methods
+        .burn(web3.utils.toWei('0.007'), '0x')
+        .send({ gas: 300000, from: accounts[0] })
+        .should.be.rejectedWith('revert');
+
+      await utils.assertBalance(
+        web3, token, accounts[0], token.initialSupply + 10);
+      await utils.assertTotalSupply(
+        web3, token, 10 * accounts.length + token.initialSupply);
+    });
   });
 };

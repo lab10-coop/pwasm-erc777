@@ -166,7 +166,29 @@ pub mod token {
             false
         }
 
-        fn send(&mut self, _to: Address, _amount: U256, _data: Vec<u8>) {}
+        fn send(&mut self, to: Address, amount: U256, data: Vec<u8>) {
+            self.require_multiple(&amount);
+            self.require_sufficient_funds(&pwasm_ethereum::sender(), &amount);
+            require(to != H160::zero(), "Cannot send to 0x0");
+
+            pwasm_ethereum::write(&balance_key(&pwasm_ethereum::sender()),
+                                  &read_balance_of(&pwasm_ethereum::sender())
+                                      .saturating_sub(amount).into());
+
+            pwasm_ethereum::write(&balance_key(&to),
+                                  &read_balance_of(&to)
+                                      .saturating_add(amount).into());
+
+            self.Sent(pwasm_ethereum::sender(),
+                      pwasm_ethereum::sender(),
+                      to,
+                      amount,
+                      data,
+                      Vec::new());
+            if erc20_compatible() {
+                self.Transfer(pwasm_ethereum::sender(), to, amount);
+            }
+        }
 
         fn operatorSend(&mut self, _from: Address, _to: Address, _amount: U256, _data: Vec<u8>, _operatorData: Vec<u8>) {}
 

@@ -80,6 +80,13 @@ async function wipeTokenBalances(web3, accounts, token) {
   await assertTotalSupply(web3, token, '0');
 }
 
+async function sendTokenBalance(web3, token, from, to, amount, data) {
+  await unlockAccount(web3, from);
+  await token.contract.methods
+    .send(to, amount, data)
+    .send({ gas: 300000, from: from });
+}
+
 module.exports = {
   getBalance,
   assertBalance,
@@ -92,4 +99,6 @@ module.exports = {
   formatAccount,
   wipeTokenBalances,
   mintForAllAccounts,
+  assertTotalSupply,
+  sendTokenBalance,
 };
