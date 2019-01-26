@@ -14,29 +14,29 @@ exports.test = function(web3, accounts, token) {
     it('should let account 3 ' +
         `send 1.12 ${token.symbol} from account 1 ` +
         'to account 2', async function() {
-      // let eventsCalled = utils.assertEventsWillBeCalled(
-      //   token.contract, [{
-      //     name: 'AuthorizedOperator',
-      //     data: { operator: accounts[3], tokenHolder: accounts[1] },
-      //   }, {
-      //     name: 'Sent',
-      //     data: {
-      //       operator: accounts[3],
-      //       from: accounts[1],
-      //       to: accounts[2],
-      //       amount: web3.utils.toWei('1.12'),
-      //       data: null,
-      //       operatorData: null,
-      //     },
-      //   }, {
-      //     name: 'Transfer',
-      //     data: {
-      //       from: accounts[1],
-      //       to: accounts[2],
-      //       amount: web3.utils.toWei('1.12'),
-      //     },
-      //   }]
-      // );
+      let eventsCalled = utils.assertEventsWillBeCalled(
+        token.contract, [{
+          name: 'AuthorizedOperator',
+          data: { operator: accounts[3], tokenHolder: accounts[1] },
+        }, {
+          name: 'Sent',
+          data: {
+            operator: accounts[3],
+            from: accounts[1],
+            to: accounts[2],
+            amount: web3.utils.toWei('1.12'),
+            data: null,
+            operatorData: null,
+          },
+        }, {
+          name: 'Transfer',
+          data: {
+            from: accounts[1],
+            to: accounts[2],
+            amount: web3.utils.toWei('1.12'),
+          },
+        }]
+      );
 
       utils.unlockAccount(web3, accounts[1]);
       await token.contract.methods
@@ -56,9 +56,9 @@ exports.test = function(web3, accounts, token) {
 
       await utils.assertTotalSupply(
         web3, token, 10 * accounts.length + token.initialSupply);
-      //await utils.assertBalance(web3, token, accounts[1], 8.88);
-      // await utils.assertBalance(web3, token, accounts[2], 11.12);
-      // await eventsCalled;
+      await utils.assertBalance(web3, token, accounts[1], 8.88);
+      await utils.assertBalance(web3, token, accounts[2], 11.12);
+      await eventsCalled;
     });
   });
 };

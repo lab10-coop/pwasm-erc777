@@ -107,15 +107,70 @@ pub mod token {
 //                    "Amount is not a multiple of granularity");
         }
 
-        pub fn require_sufficient_funds(&mut self, address: &Address, amount: &U256) {
+        fn require_sufficient_funds(&mut self, address: &Address, amount: &U256) {
             require(read_balance_of(address) >= *amount, "Not enough funds");
         }
 
-        pub fn is_operator_for(&mut self, operator: &Address, token_holder: &Address) -> bool {
+        fn is_operator_for(&mut self, operator: &Address, token_holder: &Address) -> bool {
             if operator == token_holder {
                 return true;
             }
             U256::from_big_endian(&pwasm_ethereum::read(&operator_map_key(operator, token_holder))) == U256::one()
+        }
+
+        fn do_send(&mut self, operator: &Address, from: &Address, to: &Address, amount: &U256, data: &Vec<u8>, operatorData: &Vec<u8>) {
+            self.require_multiple(amount);
+            self.require_sufficient_funds(from, amount);
+            require(to != &H160::zero(), "Cannot send to 0x0");
+
+            let mut registry = ERC820RegistryClient::new(Address::from([0x82, 0x0b, 0x58, 0x6C, 0x8C, 0x28, 0x12, 0x53, 0x66, 0xC9, 0x98, 0x64, 0x1B, 0x09, 0xDC, 0xbE, 0x7d, 0x4c, 0xBF, 0x06]));
+
+            let sender_hook = registry.getInterfaceImplementer(*from, ERC777TokensSender_key().into());
+
+            // Call ERC777 sender hook if present
+            if sender_hook != Address::zero() {
+                let mut sender = ERC777TokensSenderClient::new(sender_hook);
+                sender.tokensToSend(
+                    *operator,
+                    *from,
+                    *to,
+                    *amount,
+                    data.clone(),
+                    operatorData.clone());
+            }
+
+            pwasm_ethereum::write(&balance_key(from),
+                                  &read_balance_of(from)
+                                      .saturating_sub(*amount).into());
+
+            pwasm_ethereum::write(&balance_key(to),
+                                  &read_balance_of(to)
+                                      .saturating_add(*amount).into());
+
+            let recipient_hook = registry.getInterfaceImplementer(*to, ERC777TokensRecipient_key().into());
+
+            // Call ERC777 recipient hook if present
+            if recipient_hook != Address::zero() {
+                let mut recipient = ERC777TokensRecipientClient::new(recipient_hook);
+                recipient.tokensReceived(
+                    *operator,
+                    *from,
+                    *to,
+                    *amount,
+                    data.clone(),
+                    operatorData.clone());
+            }
+
+            self.Sent(*operator,
+                      *from,
+                      *to,
+                      *amount,
+                      data.clone(),
+                      operatorData.clone());
+            if erc20_compatible() {
+                self.Transfer(*from, *to, *amount);
+            }
+
         }
     }
 
@@ -174,13 +229,19 @@ pub mod token {
         }
 
         fn authorizeOperator(&mut self, operator: Address) {
-            pwasm_ethereum::write(&operator_map_key(&operator, &pwasm_ethereum::sender()),
+            let sender = pwasm_ethereum::sender();
+            require(operator != sender, "Cannot authorize yourself as an operator");
+            pwasm_ethereum::write(&operator_map_key(&operator, &sender),
                                   &U256::one().into());
+            self.AuthorizedOperator(operator, sender);
         }
 
         fn revokeOperator(&mut self, operator: Address) {
-            pwasm_ethereum::write(&operator_map_key(&operator, &pwasm_ethereum::sender()),
+            let sender = pwasm_ethereum::sender();
+            require(operator != sender, "Cannot revoke yourself as an operator");
+            pwasm_ethereum::write(&operator_map_key(&operator, &sender),
                                   &U256::zero().into());
+            self.RevokedOperator(operator, sender);
         }
 
         fn isOperatorFor(&mut self, operator: Address, tokenHolder: Address) -> bool {
@@ -188,64 +249,15 @@ pub mod token {
         }
 
         fn send(&mut self, to: Address, amount: U256, data: Vec<u8>) {
-            self.require_multiple(&amount);
-            self.require_sufficient_funds(&pwasm_ethereum::sender(), &amount);
-            require(to != H160::zero(), "Cannot send to 0x0");
-
-            let mut registry = ERC820RegistryClient::new(Address::from([0x82, 0x0b, 0x58, 0x6C, 0x8C, 0x28, 0x12, 0x53, 0x66, 0xC9, 0x98, 0x64, 0x1B, 0x09, 0xDC, 0xbE, 0x7d, 0x4c, 0xBF, 0x06]));
-
-            let sender_hook = registry.getInterfaceImplementer(pwasm_ethereum::sender(), ERC777TokensSender_key().into());
-
-            // Call ERC777 sender hook if present
-            if sender_hook != Address::zero() {
-                let mut sender = ERC777TokensSenderClient::new(sender_hook);
-                sender.tokensToSend(
-                    pwasm_ethereum::sender(),
-                    pwasm_ethereum::sender(),
-                    to,
-                    amount,
-                    data.clone(),
-                    Vec::new());
-            }
-
-            pwasm_ethereum::write(&balance_key(&pwasm_ethereum::sender()),
-                                  &read_balance_of(&pwasm_ethereum::sender())
-                                      .saturating_sub(amount).into());
-
-            pwasm_ethereum::write(&balance_key(&to),
-                                  &read_balance_of(&to)
-                                      .saturating_add(amount).into());
-
-            let recipient_hook = registry.getInterfaceImplementer(to, ERC777TokensRecipient_key().into());
-
-            // Call ERC777 recipient hook if present
-            if recipient_hook != Address::zero() {
-                let mut recipient = ERC777TokensRecipientClient::new(recipient_hook);
-                recipient.tokensReceived(
-                    pwasm_ethereum::sender(),
-                    pwasm_ethereum::sender(),
-                    to,
-                    amount,
-                    data.clone(),
-                    Vec::new());
-            }
-
-            self.Sent(pwasm_ethereum::sender(),
-                      pwasm_ethereum::sender(),
-                      to,
-                      amount,
-                      data,
-                      Vec::new());
-            if erc20_compatible() {
-                self.Transfer(pwasm_ethereum::sender(), to, amount);
-            }
+            let from =  pwasm_ethereum::sender();
+            self.do_send(&from, &from, &to, &amount, &data, &Vec::new());
         }
 
-        fn operatorSend(&mut self, from: Address, _to: Address, amount: U256, _data: Vec<u8>, _operatorData: Vec<u8>)
+        fn operatorSend(&mut self, from: Address, to: Address, amount: U256, data: Vec<u8>, operatorData: Vec<u8>)
         {
-            self.require_multiple(&amount);
-            self.require_sufficient_funds(&from, &amount);
-            require(self.is_operator_for(&pwasm_ethereum::sender(), &from), "Not an operator");
+            let operator =  pwasm_ethereum::sender();
+            require(self.is_operator_for(&operator, &from), "Not an operator");
+            self.do_send(&operator, &from, &to, &amount, &data, &operatorData);
         }
 
         fn burn(&mut self, amount: U256, data: Vec<u8>) {
