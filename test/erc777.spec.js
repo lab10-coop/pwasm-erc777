@@ -64,6 +64,7 @@ describe('pwasm ERC777 contract', function() {
   require('./utils/burn').test(web3, accounts, token);
   require('./utils/send').test(web3, accounts, token);
   require('./utils/operatorSend').test(web3, accounts, token);
+  require('./utils/operatorBurn').test(web3, accounts, token);
 
   after(function() {
     // Close the connection to allow this process to end

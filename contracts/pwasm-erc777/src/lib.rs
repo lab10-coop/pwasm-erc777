@@ -170,7 +170,29 @@ pub mod token {
             if erc20_compatible() {
                 self.Transfer(*from, *to, *amount);
             }
+        }
 
+        fn do_burn(&mut self, operator: &Address, token_holder: &Address, amount: &U256, data: &Vec<u8>, operatorData: &Vec<u8>) {
+            self.require_multiple(amount);
+            self.require_sufficient_funds(token_holder, amount);
+
+            pwasm_ethereum::write(&balance_key(token_holder),
+                                  &read_balance_of(&token_holder)
+                                      .saturating_sub(*amount).into());
+
+            pwasm_ethereum::write(&total_supply_key(),
+                                  &self.totalSupply()
+                                      .saturating_sub(*amount).into());
+
+            self.Burned(*operator,
+                        *token_holder,
+                        *amount,
+                        data.clone(),
+                        operatorData.clone());
+
+            if erc20_compatible() {
+                self.Transfer(*token_holder, Address::zero(), *amount);
+            }
         }
     }
 
@@ -249,41 +271,27 @@ pub mod token {
         }
 
         fn send(&mut self, to: Address, amount: U256, data: Vec<u8>) {
-            let from =  pwasm_ethereum::sender();
+            let from = pwasm_ethereum::sender();
             self.do_send(&from, &from, &to, &amount, &data, &Vec::new());
         }
 
         fn operatorSend(&mut self, from: Address, to: Address, amount: U256, data: Vec<u8>, operatorData: Vec<u8>)
         {
-            let operator =  pwasm_ethereum::sender();
+            let operator = pwasm_ethereum::sender();
             require(self.is_operator_for(&operator, &from), "Not an operator");
             self.do_send(&operator, &from, &to, &amount, &data, &operatorData);
         }
 
         fn burn(&mut self, amount: U256, data: Vec<u8>) {
-            self.require_multiple(&amount);
-            self.require_sufficient_funds(&pwasm_ethereum::sender(), &amount);
-
-            pwasm_ethereum::write(&balance_key(&pwasm_ethereum::sender()),
-                                  &read_balance_of(&pwasm_ethereum::sender())
-                                      .saturating_sub(amount).into());
-
-            pwasm_ethereum::write(&total_supply_key(),
-                                  &self.totalSupply()
-                                      .saturating_sub(amount).into());
-
-            self.Burned(pwasm_ethereum::sender(),
-                        pwasm_ethereum::sender(),
-                        amount,
-                        data,
-                        Vec::new());
-
-            if erc20_compatible() {
-                self.Transfer(pwasm_ethereum::sender(), Address::zero(), amount);
-            }
+            let sender = pwasm_ethereum::sender();
+            self.do_burn(&sender, &sender, &amount, &data, &Vec::new());
         }
 
-        fn operatorBurn(&mut self, _from: Address, _amount: U256, _data: Vec<u8>, _operatorData: Vec<u8>) {}
+        fn operatorBurn(&mut self, from: Address, amount: U256, data: Vec<u8>, operatorData: Vec<u8>) {
+            let operator = pwasm_ethereum::sender();
+            require(self.is_operator_for(&operator, &from), "Not an operator");
+            self.do_burn(&operator, &from, &amount, &data, &operatorData);
+        }
 
         fn disableERC20(&mut self) {
             require_owner();
@@ -325,6 +333,7 @@ mod tests {
     static TEST_NAME: &'static str = "TestToken";
     static TEST_SYMBOL: &'static str = "TTK";
     static TEST_GRANULARITY: u64 = 100000000000000;
+
     fn test_owner_address() -> Address {
         Address::from([0xea, 0x67, 0x4f, 0xdd, 0xe7, 0x14, 0xfd, 0x97, 0x9d, 0xe3, 0xed, 0xf0, 0xf5, 0x6a, 0xa9, 0x71, 0x6b, 0x89, 0x8e, 0xc8])
     }
