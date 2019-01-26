@@ -43,7 +43,7 @@ async function initAccounts(web3, accounts) {
   accounts.push('0x004ec07d2329997267Ec62b4166639513386F32E');
 
   // create test accounts
-  for (let i = 0; i < 2; ++i) {
+  for (let i = 0; i < 3; ++i) {
     let testAccount = await web3.eth.personal.newAccount(password);
     // Transfer some funds to it for transactions
     await web3.eth.sendTransaction({
