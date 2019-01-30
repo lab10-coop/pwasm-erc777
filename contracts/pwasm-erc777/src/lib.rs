@@ -7,95 +7,13 @@ mod utils;
 mod ERC820Registry;
 mod ERC777TokensRecipient;
 mod ERC777TokensSender;
-
+mod ERC777;
 
 pub mod token {
     use pwasm_std::String;
     use pwasm_abi::types::*;
-    use pwasm_abi_derive::eth_abi;
     use crate::keys::*;
     use crate::utils::*;
-
-    #[eth_abi(ERC777Endpoint, ERC777Client)]
-    pub trait ERC777Interface {
-        fn constructor(&mut self, name: String, symbol: String, granularity: U256);
-        fn mint(&mut self, tokenHolder: Address, amount: U256, operatorData: Vec<u8>);
-
-        #[constant]
-        fn name(&mut self) -> String;
-
-        #[constant]
-        fn symbol(&mut self) -> String;
-
-        #[constant]
-        fn totalSupply(&mut self) -> U256;
-
-        #[constant]
-        fn balanceOf(&mut self, owner: Address) -> U256;
-
-        #[constant]
-        fn granularity(&mut self) -> U256;
-
-        #[constant]
-        fn defaultOperators(&mut self) -> Vec<Address>;
-        fn authorizeOperator(&mut self, operator: Address);
-        fn revokeOperator(&mut self, operator: Address);
-        #[constant]
-        fn isOperatorFor(&mut self, operator: Address, tokenHolder: Address) -> bool;
-
-        fn send(&mut self, to: Address, amount: U256, data: Vec<u8>);
-        fn operatorSend(&mut self, from: Address, to: Address, amount: U256, data: Vec<u8>, operatorData: Vec<u8>);
-
-        fn burn(&mut self, amount: U256, data: Vec<u8>);
-        fn operatorBurn(&mut self, from: Address, amount: U256, data: Vec<u8>, operatorData: Vec<u8>);
-
-        fn disableERC20(&mut self);
-        fn enableERC20(&mut self);
-
-        #[event]
-        fn Sent(&mut self,
-                operator: Address,
-                from: Address,
-                to: Address,
-                amount: U256,
-                data: Vec<u8>,
-                operatorData: Vec<u8>,
-        );
-
-        #[event]
-        fn Minted(&mut self,
-                  operator: Address,
-                  to: Address,
-                  amount: U256,
-                  operatorData: Vec<u8>);
-
-        #[event]
-        fn Burned(&mut self,
-                  operator: Address,
-                  from: Address,
-                  amount: U256,
-                  data: Vec<u8>,
-                  operatorData: Vec<u8>);
-
-        #[event]
-        fn AuthorizedOperator(&mut self,
-                              operator: Address,
-                              tokenHolder: Address);
-
-        #[event]
-        fn RevokedOperator(&mut self,
-                           operator: Address,
-                           tokenHolder: Address);
-
-        #[event]
-        fn ERC20Enabled(&mut self);
-
-        #[event]
-        fn ERC20Disabled(&mut self);
-
-        #[event]
-        fn Transfer(&mut self, from: Address, to: Address, amount: U256);
-    }
 
     pub struct ERC777Contract;
 
@@ -196,9 +114,10 @@ pub mod token {
         }
     }
 
-    use crate::ERC820Registry::*;
+    use crate::ERC777::*;
     use crate::ERC777TokensRecipient::*;
     use crate::ERC777TokensSender::*;
+    use crate::ERC820Registry::*;
 
     impl ERC777Interface for ERC777Contract {
         fn constructor(&mut self, name: String, symbol: String, granularity: U256) {
@@ -310,21 +229,21 @@ use pwasm_abi::eth::EndpointInterface;
 /// Will be described in the next step
 #[no_mangle]
 pub fn deploy() {
-    let mut endpoint = token::ERC777Endpoint::new(token::ERC777Contract {});
+    let mut endpoint = crate::ERC777::ERC777Endpoint::new(token::ERC777Contract {});
     endpoint.dispatch_ctor(&pwasm_ethereum::input());
 }
 
 /// The call function is the main function of the *deployed* contract
 #[no_mangle]
 pub fn call() {
-    let mut endpoint = token::ERC777Endpoint::new(token::ERC777Contract {});
+    let mut endpoint = crate::ERC777::ERC777Endpoint::new(token::ERC777Contract {});
     pwasm_ethereum::ret(&endpoint.dispatch(&pwasm_ethereum::input()));
 }
 
 #[cfg(test)]
 mod tests {
     use crate::*;
-    use crate::token::ERC777Interface;
+    use crate::ERC777::ERC777Interface;
     use pwasm_std::String;
     use pwasm_abi::types::*;
     use pwasm_test::ext_reset;
