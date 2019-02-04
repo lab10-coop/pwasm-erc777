@@ -1,6 +1,6 @@
 /// "Eternal Storage" keys used in the ERC777 contract implementation
 
-use keccak_derive::compiletime_keccak;
+use compiletime_keccak::compiletime_keccak;
 use pwasm_abi::types::{H256, U256, Address, Vec};
 use pwasm_std::keccak;
 
