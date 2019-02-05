@@ -304,7 +304,7 @@ mod tests {
         assert_eq!(contract.isOperatorFor(operator, test_owner_address()), false);
     }
 
-    keccak_derive::compiletime_keccak!(hashed_string);
+    compiletime_keccak::compiletime_keccak!(hashed_string);
 
     #[test]
     fn compare_compile_time_to_runtime_keccak() {
