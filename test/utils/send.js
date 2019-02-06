@@ -120,7 +120,7 @@ exports.test = function(web3, accounts, token) {
 
     // deactivated due to compile errors in the pwasm contract when
     // a U256 multiply operation is performed.
-    xit('should not let account 1 ' +
+    it('should not let account 1 ' +
       `send 0.007 ${token.symbol} (< granulairty)`, async function() {
       await utils.assertTotalSupply(
         web3, token, 10 * accounts.length + token.initialSupply);
