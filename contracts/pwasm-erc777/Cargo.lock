@@ -84,16 +84,7 @@ dependencies = [
 
 [[package]]
 name = "pwasm-abi"
-version = "0.2.1"
-source = "git+https://github.com/lab10-coop/pwasm-abi.git?branch=string-abi#f604f35ca96a4cc0a8288633a6f559792d905ed6"
-dependencies = [
- "byteorder 1.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "pwasm-std 0.13.0 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "pwasm-abi"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "byteorder 1.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -102,8 +93,8 @@ dependencies = [
 
 [[package]]
 name = "pwasm-abi-derive"
-version = "0.2.1"
-source = "git+https://github.com/lab10-coop/pwasm-abi.git?branch=string-abi#f604f35ca96a4cc0a8288633a6f559792d905ed6"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "byteorder 1.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "fixed-hash 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -129,8 +120,8 @@ name = "pwasm-erc777"
 version = "0.1.0"
 dependencies = [
  "compiletime-keccak 0.1.0 (git+https://github.com/lab10-coop/compiletime-keccak.git)",
- "pwasm-abi 0.2.1 (git+https://github.com/lab10-coop/pwasm-abi.git?branch=string-abi)",
- "pwasm-abi-derive 0.2.1 (git+https://github.com/lab10-coop/pwasm-abi.git?branch=string-abi)",
+ "pwasm-abi 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pwasm-abi-derive 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "pwasm-ethereum 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "pwasm-std 0.13.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "pwasm-test 0.1.1 (git+https://github.com/paritytech/pwasm-test)",
@@ -171,7 +162,7 @@ name = "pwasm-test"
 version = "0.1.1"
 source = "git+https://github.com/paritytech/pwasm-test#6e621660d1513185fecf6dac5ec2fc8758ff4797"
 dependencies = [
- "pwasm-abi 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pwasm-abi 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "pwasm-ethereum 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "pwasm-std 0.13.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -340,9 +331,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum libc 0.2.48 (registry+https://github.com/rust-lang/crates.io-index)" = "e962c7641008ac010fa60a7dfdc1712449f29c44ef2d4702394aea943ee75047"
 "checksum memory_units 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "8452105ba047068f40ff7093dd1d9da90898e63dd61736462e9cdda6a90ad3c3"
 "checksum proc-macro2 0.4.26 (registry+https://github.com/rust-lang/crates.io-index)" = "38fddd23d98b2144d197c0eca5705632d4fe2667d14a6be5df8934f8d74f1978"
-"checksum pwasm-abi 0.2.1 (git+https://github.com/lab10-coop/pwasm-abi.git?branch=string-abi)" = "<none>"
-"checksum pwasm-abi 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "553291f59e0650074286e6270fbfae05cbce429c5d89a27ec31294d483c8288b"
-"checksum pwasm-abi-derive 0.2.1 (git+https://github.com/lab10-coop/pwasm-abi.git?branch=string-abi)" = "<none>"
+"checksum pwasm-abi 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "3eccaec239b0e2967578c97a589a08893abe5d3ada2479fde6d04e0ec32c9993"
+"checksum pwasm-abi-derive 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "accf3b2794b18bd619a478c8bb23624ce92d50f4cd70b46eb586290abf1e758c"
 "checksum pwasm-alloc 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "bf268e76f224753679a7cb6e0261c9226676c83cd4d2b6ead2095524f00c854f"
 "checksum pwasm-ethereum 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)" = "8b5509e67ee47ec62bdbd1c32a6949931adbe2e12a460bb45e5dc46593fdc71c"
 "checksum pwasm-libc 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "f31d0f66477d84afab3591c08587188b46fd1ab93c1e1cb5d23f683fcc2a92b1"

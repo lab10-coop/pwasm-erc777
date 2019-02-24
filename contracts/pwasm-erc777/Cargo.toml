@@ -7,8 +7,8 @@ edition = "2018"
 [dependencies]
 pwasm-std = "0.13"
 pwasm-ethereum = "0.8"
-pwasm-abi = { git = "https://github.com/lab10-coop/pwasm-abi.git", branch = "string-abi" }
-pwasm-abi-derive = { git = "https://github.com/lab10-coop/pwasm-abi.git", branch = "string-abi" }
+pwasm-abi = "0.2.2"
+pwasm-abi-derive = "0.2.2"
 compiletime-keccak = { git = "https://github.com/lab10-coop/compiletime-keccak.git" }
 
 [dev-dependencies.pwasm-test]
